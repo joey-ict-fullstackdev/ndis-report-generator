@@ -17,6 +17,9 @@ How each session works:
 ## Phase 0 — Own the skeleton (setup homework)
 
 - [ ] Write `tsconfig.json` (know what `strict`, `moduleResolution`, and `jsx` do)
+- [ ] **Implement `lib/verify.ts` test-driven**: the stub throws; make `npm test` (7 tests
+      in `lib/verify.test.ts`) go red → green. This is the heart of the pitch — it must
+      be mine. No coach code.
 - [ ] Get `npm run typecheck`, `npm test`, and `npm run build` passing
 - [ ] Write `evals/run.ts`: load the 3 cases in `data/synthetic/`, call `generateReport` + `verifyReport`, assert (goal count matches input; goal_text preserved; evidenced goals have ≥1 verified claim; the zero-evidence goal in case 3 is `insufficient_evidence` or fully flagged); exit non-zero on failure
 - [ ] Write `README.md` (what it is, the traceability engine, quick start, synthetic-data disclaimer)
@@ -27,13 +30,22 @@ How each session works:
 
 ## Phase 1 — React rendering & reconciliation  ← the interview gap
 
-- [ ] **What triggers a render**: use React DevTools Profiler; explain why typing in one
-      input re-renders what it re-renders; split `app/page.tsx` into components
-- [ ] **Reconciliation & keys**: add "delete goal" and "reorder goals" to the editor;
-      diagnose the bug that appears; fix it; explain exactly what React's diffing did
-- [ ] **Render vs commit; memo/useMemo/useCallback**: measure first, optimize only what's slow
-- [ ] **Effects & race conditions**: find the double-click bug in report generation; fix
-      with AbortController; explain event-handler fetch vs useEffect fetch
+I build the entire UI myself, component by component (`app/page.tsx` is a stub with the
+feature list; product spec in `PITCH.md`). Each step pairs a build task with a concept:
+
+- [ ] **Input form + what triggers a render**: build participant/goals/notes form as
+      separate components; use React DevTools Profiler to explain what re-renders when
+      I type in one input, and why
+- [ ] **Goals/claims editor + reconciliation & keys**: build the per-goal editor with
+      "delete goal" and "reorder goals"; get list keys wrong at least once on purpose,
+      observe what breaks, fix it, and explain exactly what React's diffing did
+- [ ] **Render vs commit; memo/useMemo/useCallback**: measure my UI first, optimize only
+      what's actually slow
+- [ ] **Generate flow + effects & race conditions**: wire up the /api/generate call;
+      demonstrate the stale-response race (click twice fast), fix with AbortController;
+      explain event-handler fetch vs useEffect fetch
+- [ ] **Evidence trail + DOCX export**: render verified ✓ vs flagged ⚠ claims per goal;
+      wire `exportDocx`
 - [ ] ✅ Checkpoint: answer "walk me through setState → pixels on screen" unprompted,
       using this app as the example
 

@@ -21,9 +21,11 @@ The owner is using this project to learn TypeScript, React internals, and Next.j
 5. Keep `LEARNING_PLAN.md` checkboxes updated as phases complete.
 6. Encourage a short note in `notes/` (own words, use `notes/TEMPLATE.md`) after each concept.
 
-**Do not spoil the planted teaching material.** The codebase contains deliberate issues the owner must find and diagnose themselves as part of Phase 1. Do not name them, fix them, or flag them in reviews unless the owner has already found them. (They are listed nowhere in this file on purpose.)
+**The interview-critical code is deliberately unwritten — the owner writes it:**
+- `lib/verify.ts` is a stub that throws. The owner implements it test-driven against `lib/verify.test.ts` (the tests are the spec). Never write the implementation, even partially.
+- `app/page.tsx` is a stub. The owner builds the entire UI component-by-component through Phase 1. Review their components, hint, profile with them — never hand them JSX.
 
-**Phase 0 homework — do not complete these for the owner:** `tsconfig.json`, `evals/run.ts`, `README.md`, `.github/workflows/ci.yml` are intentionally missing/unfinished.
+**Phase 0 homework — do not complete these for the owner:** `tsconfig.json`, `evals/run.ts`, `README.md`, `.github/workflows/ci.yml` are intentionally missing/unfinished, plus the `verify.ts` implementation above.
 
 ## Commands
 
@@ -41,9 +43,9 @@ npm run eval       # eval harness over data/synthetic (needs ANTHROPIC_API_KEY, 
 
 - `lib/schema.ts` — **single source of truth.** Zod schemas define the report shape; they drive the LLM's structured output format, the TypeScript types (`z.infer`), and runtime validation. Change here first.
 - `lib/generate.ts` — server-only. Calls `claude-opus-5` via `client.messages.parse` with `zodOutputFormat(ReportSchema)`. Handles `stop_reason: "refusal"`.
-- `lib/verify.ts` — the traceability engine. Pure, deterministic, dependency-free: normalized substring match of each cited quote against its source note. Unit-tested in `lib/verify.test.ts`. No AI verifies AI.
+- `lib/verify.ts` — the traceability engine. Pure, deterministic, dependency-free. **Currently a stub the owner implements TDD-style against `lib/verify.test.ts`.** Design intent: normalized matching of each cited quote against its source note; no AI verifies AI.
 - `app/api/generate/route.ts` — POST endpoint: validate → generate → verify → return `VerifiedReport`.
-- `app/page.tsx` — the whole UI: input form → draft editor → per-claim evidence trail → DOCX export.
+- `app/page.tsx` — the whole UI: input form → draft editor → per-claim evidence trail → DOCX export. **Currently a stub; the owner builds it during Phase 1** (the required feature list is in the stub's comments).
 - `lib/docx.ts` — client-side Word export via the `docx` package.
 - `data/synthetic/*.json` — three eval cases: strong evidence, mixed evidence, and a goal with zero evidence (must produce `insufficient_evidence: true`, not invented progress).
 - No database, no auth in v1 — stateless on purpose (privacy story). Planned for Phase 4 (Postgres + Drizzle + auth).

@@ -1,10 +1,14 @@
 import type { Report, SessionNote } from "./schema";
 
-// The traceability engine: an LLM can cite a note it never read or "quote" text
-// that isn't there. Every quote is checked against the actual note text; claims
-// that don't survive are flagged for practitioner input instead of rendered as fact.
-
-const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
+// The traceability engine — THE core of this project, and deliberately not implemented.
+//
+// Contract: an LLM can cite a note it never read or "quote" text that isn't there.
+// verifyReport must check every cited quote against the actual note text; claims that
+// don't survive are marked unverified so the UI flags them instead of rendering as fact.
+//
+// TODO(owner): implement this yourself, test-driven, until `npm test` passes.
+// The tests in lib/verify.test.ts define the exact behavior (including whitespace/case
+// normalization). Do not let the coach write this.
 
 export type VerifiedEvidence = {
   note_id: string;
@@ -28,22 +32,7 @@ export function verifyReport(
   report: Report,
   notes: SessionNote[]
 ): VerifiedReport {
-  const byId = new Map(notes.map((n) => [n.id, norm(n.text)]));
-  return {
-    ...report,
-    goals: report.goals.map((goal) => ({
-      ...goal,
-      claims: goal.claims.map((claim) => {
-        const evidence = claim.evidence.map((e) => ({
-          ...e,
-          verified: byId.get(e.note_id)?.includes(norm(e.quote)) ?? false,
-        }));
-        return {
-          text: claim.text,
-          evidence,
-          verified: evidence.length > 0 && evidence.every((e) => e.verified),
-        };
-      }),
-    })),
-  };
+  throw new Error(
+    "Not implemented — this is the owner's exercise. Make lib/verify.test.ts pass."
+  );
 }
