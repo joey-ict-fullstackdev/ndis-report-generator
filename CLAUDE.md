@@ -33,7 +33,7 @@ The owner is using this project to learn TypeScript, React internals, and Next.j
 npm run dev        # dev server (localhost:3000)
 npm run build      # production build
 npm run typecheck  # tsc --noEmit
-npm test           # unit tests for the verifier (tsx --test)
+npm test           # unit tests via Vitest (currently red until verify.ts is implemented)
 npm run eval       # eval harness over data/synthetic (needs ANTHROPIC_API_KEY, costs money)
 ```
 

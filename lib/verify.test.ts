@@ -1,5 +1,4 @@
-import test from "node:test";
-import assert from "node:assert/strict";
+import { expect, test } from "vitest";
 import { verifyReport } from "./verify";
 import type { Report, SessionNote } from "./schema";
 
@@ -35,39 +34,39 @@ test("exact quote from the cited note is verified", () => {
   const claim = claimOf(
     reportWith([{ note_id: "S1", quote: "transferred from wheelchair to bed independently" }])
   );
-  assert.equal(claim.verified, true);
+  expect(claim.verified).toBe(true);
 });
 
 test("quote matching is case- and whitespace-insensitive", () => {
   const claim = claimOf(
     reportWith([{ note_id: "S1", quote: "Transferred  from wheelchair\nto bed Independently" }])
   );
-  assert.equal(claim.verified, true);
+  expect(claim.verified).toBe(true);
 });
 
 test("fabricated quote is rejected", () => {
   const claim = claimOf(
     reportWith([{ note_id: "S1", quote: "client walked 500m unaided" }])
   );
-  assert.equal(claim.verified, false);
-  assert.equal(claim.evidence[0].verified, false);
+  expect(claim.verified).toBe(false);
+  expect(claim.evidence[0].verified).toBe(false);
 });
 
 test("real quote attributed to the wrong note is rejected", () => {
   const claim = claimOf(
     reportWith([{ note_id: "S2", quote: "transferred from wheelchair to bed independently" }])
   );
-  assert.equal(claim.verified, false);
+  expect(claim.verified).toBe(false);
 });
 
 test("unknown note id is rejected", () => {
   const claim = claimOf(reportWith([{ note_id: "S99", quote: "anything" }]));
-  assert.equal(claim.verified, false);
+  expect(claim.verified).toBe(false);
 });
 
 test("claim with no evidence is not verified", () => {
   const claim = claimOf(reportWith([]));
-  assert.equal(claim.verified, false);
+  expect(claim.verified).toBe(false);
 });
 
 test("one bad quote among good ones fails the claim", () => {
@@ -77,7 +76,7 @@ test("one bad quote among good ones fails the claim", () => {
       { note_id: "S1", quote: "this text does not exist" },
     ])
   );
-  assert.equal(claim.verified, false);
-  assert.equal(claim.evidence[0].verified, true);
-  assert.equal(claim.evidence[1].verified, false);
+  expect(claim.verified).toBe(false);
+  expect(claim.evidence[0].verified).toBe(true);
+  expect(claim.evidence[1].verified).toBe(false);
 });
