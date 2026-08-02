@@ -1,0 +1,18 @@
+# Project: NDIS Progress Report Generator (with verifiable evidence tracing)
+
+**The problem.** Allied health practitioners who see NDIS participants must write progress reports to justify continued funding at plan reviews. Each report is compiled manually from months of session notes — goal-by-goal progress, barriers, functional capacity, and quantified support recommendations. It's hours of unbillable paperwork per participant, and it's universally hated.
+
+**The solution.** A web app where a clinician pastes plan goals and session notes, and gets back a structured draft report: each goal stated exactly as written in the plan, a status (Achieved / On track / Modified / Not yet commenced / Discontinued), an objective progress summary, and quantified recommendations. The clinician edits the draft and exports to Word.
+
+**The heart of it: evidence traceability.** The known failure mode of AI in clinical documentation is hallucination — a report that claims progress the notes don't support is not a time-saver, it's a liability. So the core of this build is a verification engine: every generated claim must cite a verbatim quote from a specific session note, and the system programmatically checks each quote actually exists in that note. Claims that fail verification are flagged "practitioner to verify" instead of rendered as fact; goals with no supporting notes are marked "insufficient evidence" rather than invented. The UI shows the full evidence trail per claim.
+
+**Why this idea.**
+
+1. The demand is validated: Splose — Adelaide-based, just raised $46M, currently hiring an AI team — ships AI report writing as a live feature (splose AI drafts reports and letters of support from progress notes), and national pure-plays SecondShift and Hapya sell exactly this product. My project is a working demo of that feature category with one addition their marketing doesn't mention: programmatic evidence verification, so no claim reaches the report unless its quoted source exists in the session notes.
+2. It positions me across the whole Adelaide health tech cluster — Splose as the bullseye, plus Lumary and Personify Care where it demonstrates NDIS domain fluency rather than a feature clone, plus the national players as remote targets.
+3. The traceability engine demonstrates the hard, hireable skill — building AI features that are safe to trust, not just prompt-wrapping.
+4. It's full-SDLC: typed schema, structured LLM output, verification logic with unit tests, an eval suite over synthetic cases, CI/CD, and deployment. Synthetic data only — no real patient information anywhere.
+
+**Notes vs reports — the positioning distinction.** A progress *note* is what a clinician writes after each session; a progress *report* is the plan-review document synthesised from months of those notes, with funding consequences. Several platforms (including Lumary) ship AI-assisted note-*writing*; this project does note-to-report *synthesis* — and synthesis is where hallucination risk concentrates, because the model is aggregating across months of material rather than transcribing one session. That's exactly why the verification engine is the heart of the build. If asked "how is this different from our AI notes feature": notes are per-session capture, reports are cross-session synthesis, and no claim survives synthesis here unless its quoted source exists in the notes. (Caveat for interviews: all competitor claims are based on public materials — say "your public materials describe X; I explored adding Y," never "you don't have Y.")
+
+**Scope.** v1 in ~2 weeks: single discipline (OT), no accounts, no integrations — the depth goes into the traceability engine and the evals, because that's the part that impresses engineers.

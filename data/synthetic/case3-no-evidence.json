@@ -1,0 +1,27 @@
+{
+  "name": "no evidence — second goal has zero coverage in notes",
+  "participant": {
+    "name": "Riley Chen (SYNTHETIC)",
+    "ndis_number": "430000003",
+    "plan_start": "2026-01-01",
+    "plan_end": "2026-12-31",
+    "practitioner": "Morgan Davis, Physiotherapist (SYNTHETIC)",
+    "discipline": "Physiotherapy"
+  },
+  "goals": [
+    "I want to walk to my local shops using my walker",
+    "I want to return to swimming at my local pool"
+  ],
+  "notes": [
+    {
+      "id": "S1",
+      "label": "2026-03-05",
+      "text": "Gait assessment. Client mobilised 50 metres with four-wheeled walker on level indoor surface, one standing rest required. Step length reduced on left side. Prescribed graded walking program starting at 5 minutes daily."
+    },
+    {
+      "id": "S2",
+      "label": "2026-05-14",
+      "text": "Outdoor mobility session. Client walked 150 metres on footpath with walker including one kerb ramp, two standing rests. Reported confidence improving. Progressed walking program to 10 minutes daily. Discussed route planning to local shops, approximately 400 metres from home."
+    }
+  ]
+}

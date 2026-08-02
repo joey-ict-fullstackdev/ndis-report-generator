@@ -1,0 +1,33 @@
+{
+  "name": "mixed evidence — one goal barely mentioned in notes",
+  "participant": {
+    "name": "Sam Taylor (SYNTHETIC)",
+    "ndis_number": "430000002",
+    "plan_start": "2025-11-01",
+    "plan_end": "2026-10-31",
+    "practitioner": "Priya Sharma, Speech Pathologist (SYNTHETIC)",
+    "discipline": "Speech Pathology"
+  },
+  "goals": [
+    "I want to communicate my needs at home using my AAC device",
+    "I want to order food and drinks in the community by myself",
+    "I want to make friends at my day program"
+  ],
+  "notes": [
+    {
+      "id": "S1",
+      "label": "2026-01-15",
+      "text": "AAC device programming session. Added 12 new food and drink vocabulary items at client's request. Client navigated to home page independently and located new items with minimal prompting. Parent reports client now uses device to request preferred snacks at home most days."
+    },
+    {
+      "id": "S2",
+      "label": "2026-02-19",
+      "text": "Community access session at local cafe. Client used AAC device to order a hot chocolate with one verbal prompt to press the speak button. Cafe staff responded positively. Client maintained attention throughout the exchange. Second order attempt (a muffin) completed independently."
+    },
+    {
+      "id": "S3",
+      "label": "2026-04-08",
+      "text": "Home visit. Client demonstrated requesting help, more, and finished during a cooking activity with parent. Device access is now consistent across morning and evening routines per parent report. Brief mention that client waved to a peer when arriving at day program pickup."
+    }
+  ]
+}

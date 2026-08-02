@@ -1,0 +1,37 @@
+{
+  "name": "strong evidence — all goals covered by notes",
+  "participant": {
+    "name": "Alex Nguyen (SYNTHETIC)",
+    "ndis_number": "430000001",
+    "plan_start": "2025-09-01",
+    "plan_end": "2026-08-31",
+    "practitioner": "Jordan Lee, OT (SYNTHETIC)",
+    "discipline": "Occupational Therapy"
+  },
+  "goals": [
+    "I want to be more independent with my self-care tasks, including showering and dressing",
+    "I want to prepare simple meals for myself at home"
+  ],
+  "notes": [
+    {
+      "id": "S1",
+      "label": "2026-02-04",
+      "text": "Initial review session. Client required moderate physical assistance for showering, including transfers in and out of the recess. Dressing lower body required assistance with socks and shoes. Discussed goals for the plan period. Client motivated to reduce reliance on support workers for morning routine."
+    },
+    {
+      "id": "S2",
+      "label": "2026-03-11",
+      "text": "Shower assessment with equipment trial. Client used shower chair and handheld hose. Completed upper body washing independently, required verbal prompts only for sequencing lower body washing. Transfers completed with supervision using grab rail. Recommended long-handled sponge, trialled successfully in session."
+    },
+    {
+      "id": "S3",
+      "label": "2026-04-22",
+      "text": "Kitchen-based session. Client prepared a sandwich and a hot drink with setup assistance only. Used kettle tipper safely. Fatigue noted after 20 minutes of standing; client sat to complete food preparation using perching stool. Discussed energy conservation techniques."
+    },
+    {
+      "id": "S4",
+      "label": "2026-06-03",
+      "text": "Client reported completing morning shower routine with supervision only for the past two weeks, no physical assistance required. Dressing now independent using button hook and elastic laces. Prepared two-step meal (pasta with jar sauce) in session with verbal prompts for stove safety. Client fatigued after session but pleased with progress."
+    }
+  ]
+}
