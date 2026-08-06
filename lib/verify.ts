@@ -28,11 +28,64 @@ export type VerifiedReport = Omit<Report, "goals"> & {
   })[];
 };
 
+function normalizeText(text: string): string {
+  const normalized = text
+    .trim()
+    .replace(/ {2,}/g, " ")
+    .replace(/\r?\n/g, " ")
+    .toLowerCase();
+
+  return normalized;
+}
+
+function checkEvidence(
+  note: { note_id: string; quote: string },
+  notes: SessionNote[],
+): VerifiedEvidence[] {
+  const matchingNotes = notes.filter((n) => n.id == note.note_id);
+
+  if (matchingNotes.length == 0) {
+    return [
+      {
+        note_id: note.note_id,
+        quote: note.quote,
+        verified: false,
+      },
+    ];
+  }
+  return matchingNotes.map((n) => ({
+    note_id: note.note_id,
+    quote: note.quote,
+    verified: normalizeText(n.text).includes(normalizeText(note.quote)),
+  }));
+}
+
+function checkClaim(
+  checkedClaims: {
+    text: string;
+    evidence: { note_id: string; quote: string }[];
+  }[],
+  notes: SessionNote[],
+): VerifiedClaim[] {
+  return checkedClaims.map((claims) => {
+    const evidence = claims.evidence.flatMap((e) => checkEvidence(e, notes));
+
+    return {
+      text: claims.text,
+      evidence: evidence,
+      verified: evidence.length > 0 && evidence.every((e) => e.verified),
+    };
+  });
+}
+
 export function verifyReport(
   report: Report,
-  notes: SessionNote[]
+  notes: SessionNote[],
 ): VerifiedReport {
-  throw new Error(
-    "Not implemented — this is the owner's exercise. Make lib/verify.test.ts pass."
-  );
+  const verifiedGoals = report.goals.map((goal) => ({
+    ...goal,
+    claims: checkClaim(goal.claims, notes),
+  }));
+
+  return { ...report, goals: verifiedGoals };
 }

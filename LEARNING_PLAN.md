@@ -16,14 +16,14 @@ How each session works:
 
 ## Phase 0 — Own the skeleton (setup homework)
 
-- [ ] Write `tsconfig.json` (know what `strict`, `moduleResolution`, and `jsx` do)
-- [ ] **Implement `lib/verify.ts` test-driven**: the stub throws; make `npm test` (7 tests
+- [x] Write `tsconfig.json` (know what `strict`, `moduleResolution`, and `jsx` do)
+- [x] **Implement `lib/verify.ts` test-driven**: the stub throws; make `npm test` (7 tests
       in `lib/verify.test.ts`) go red → green. This is the heart of the pitch — it must
       be mine. No coach code.
-- [ ] Get `npm run typecheck`, `npm test`, and `npm run build` passing
-- [ ] Write `evals/run.ts`: load the 3 cases in `data/synthetic/`, call `generateReport` + `verifyReport`, assert (goal count matches input; goal_text preserved; evidenced goals have ≥1 verified claim; the zero-evidence goal in case 3 is `insufficient_evidence` or fully flagged); exit non-zero on failure
-- [ ] Write `README.md` (what it is, the traceability engine, quick start, synthetic-data disclaimer)
-- [ ] Write `.github/workflows/ci.yml` (typecheck + unit tests on push)
+- [x] Get `npm run typecheck`, `npm test`, and `npm run build` passing
+- [x] Write `evals/run.ts`: load the 3 cases in `data/synthetic/`, call `generateReport` + `verifyReport`, assert (goal count matches input; goal_text preserved; evidenced goals have ≥1 verified claim; the zero-evidence goal in case 3 is `insufficient_evidence` or fully flagged); exit non-zero on failure
+- [x] Write `README.md` (what it is, the traceability engine, quick start, synthetic-data disclaimer)
+- [x] Write `.github/workflows/ci.yml` (typecheck + unit tests on push)
 - [ ] Connect the repo to Vercel for CD: preview deployment per PR, auto-deploy on
       merge to main. After this I can honestly describe a full CI/CD pipeline:
       push → typecheck/tests (CI) → preview deploy → merge → production (CD)
