@@ -24,7 +24,7 @@ How each session works:
 - [x] Write `evals/run.ts`: load the 3 cases in `data/synthetic/`, call `generateReport` + `verifyReport`, assert (goal count matches input; goal_text preserved; evidenced goals have ≥1 verified claim; the zero-evidence goal in case 3 is `insufficient_evidence` or fully flagged); exit non-zero on failure
 - [x] Write `README.md` (what it is, the traceability engine, quick start, synthetic-data disclaimer)
 - [x] Write `.github/workflows/ci.yml` (typecheck + unit tests on push)
-- [ ] Connect the repo to Vercel for CD: preview deployment per PR, auto-deploy on
+- [x] Connect the repo to Vercel for CD: preview deployment per PR, auto-deploy on
       merge to main. After this I can honestly describe a full CI/CD pipeline:
       push → typecheck/tests (CI) → preview deploy → merge → production (CD)
 
