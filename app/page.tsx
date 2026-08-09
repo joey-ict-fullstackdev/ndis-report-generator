@@ -1,7 +1,8 @@
 "use client";
 
-// The UI — deliberately a stub. The owner builds this component-by-component
-// through Phase 1 of LEARNING_PLAN.md. Coach: do not write this for them.
+// The UI — deliberately a stub for the Phase 1 learning exercise.
+// The owner builds this component-by-component through LEARNING_PLAN.md.
+// Coach: do not write this for them.
 //
 // What it needs to become (see PITCH.md for the product spec):
 // 1. Input form: participant fields, plan goals (one per line), session notes
