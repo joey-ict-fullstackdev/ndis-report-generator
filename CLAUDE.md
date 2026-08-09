@@ -22,10 +22,10 @@ The owner is using this project to learn TypeScript, React internals, and Next.j
 6. Encourage a short note in `notes/` (own words, use `notes/TEMPLATE.md`) after each concept.
 
 **The interview-critical code is deliberately unwritten — the owner writes it:**
-- `lib/verify.ts` is a stub that throws. The owner implements it test-driven against `lib/verify.test.ts` (the tests are the spec). Never write the implementation, even partially.
-- `app/page.tsx` is a stub. The owner builds the entire UI component-by-component through Phase 1. Review their components, hint, profile with them — never hand them JSX.
+- `lib/verify.ts` — **done.** The owner implemented it test-driven against `lib/verify.test.ts` (Phase 0, complete). Treat it as owner-owned code going forward: review/extend via hints, don't rewrite it for them.
+- `app/page.tsx` is still a stub. The owner builds the entire UI component-by-component through Phase 1 (current phase — see `LEARNING_PLAN.md`). Review their components, hint, profile with them — never hand them JSX.
 
-**Phase 0 homework — do not complete these for the owner:** `tsconfig.json`, `evals/run.ts`, `README.md`, `.github/workflows/ci.yml` are intentionally missing/unfinished, plus the `verify.ts` implementation above.
+Phase 0 (config, verify.ts, eval harness, README, CI) is complete except connecting Vercel for CD — see `LEARNING_PLAN.md` for the live checklist. Active coaching focus is Phase 1: React rendering/reconciliation, built through `app/page.tsx`.
 
 ## Commands
 
@@ -33,7 +33,7 @@ The owner is using this project to learn TypeScript, React internals, and Next.j
 npm run dev        # dev server (localhost:3000)
 npm run build      # production build
 npm run typecheck  # tsc --noEmit
-npm test           # unit tests via Vitest (currently red until verify.ts is implemented)
+npm test           # unit tests via Vitest
 npm run eval       # eval harness over data/synthetic (needs ANTHROPIC_API_KEY, costs money)
 ```
 
@@ -42,12 +42,12 @@ npm run eval       # eval harness over data/synthetic (needs ANTHROPIC_API_KEY, 
 ## Architecture
 
 - `lib/schema.ts` — **single source of truth.** Zod schemas define the report shape; they drive the LLM's structured output format, the TypeScript types (`z.infer`), and runtime validation. Change here first.
-- `lib/generate.ts` — server-only. Calls `claude-opus-5` via `client.messages.parse` with `zodOutputFormat(ReportSchema)`. Handles `stop_reason: "refusal"`.
-- `lib/verify.ts` — the traceability engine. Pure, deterministic, dependency-free. **Currently a stub the owner implements TDD-style against `lib/verify.test.ts`.** Design intent: normalized matching of each cited quote against its source note; no AI verifies AI.
+- `lib/generate.ts` — server-only. Calls `claude-haiku-4-5` via `client.messages.parse` with `zodOutputFormat(ReportSchema)`. Handles `stop_reason: "refusal"`.
+- `lib/verify.ts` — the traceability engine. Pure, deterministic, dependency-free. Implemented (owner-written, TDD against `lib/verify.test.ts`): normalizes case/whitespace, then checks each cited quote is a substring of its referenced note's text; a claim is `verified` only if every one of its evidence items checks out. No AI verifies AI.
 - `app/api/generate/route.ts` — POST endpoint: validate → generate → verify → return `VerifiedReport`.
 - `app/page.tsx` — the whole UI: input form → draft editor → per-claim evidence trail → DOCX export. **Currently a stub; the owner builds it during Phase 1** (the required feature list is in the stub's comments).
 - `lib/docx.ts` — client-side Word export via the `docx` package.
-- `data/synthetic/*.json` — three eval cases: strong evidence, mixed evidence, and a goal with zero evidence (must produce `insufficient_evidence: true`, not invented progress).
+- `data/synthetic/*.json` — three eval cases: strong evidence, mixed evidence, and a goal with zero evidence (must produce `insufficient_evidence: true`, not invented progress). `evals/run.ts` runs all three against live generation + verification and exits non-zero on failure (costs money — needs `ANTHROPIC_API_KEY`).
 - No database, no auth in v1 — stateless on purpose (privacy story). Planned for Phase 4 (Postgres + Drizzle + auth).
 
 ## Conventions
