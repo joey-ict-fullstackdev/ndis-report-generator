@@ -22,7 +22,7 @@ export default function Home() {
         against its source note — anything unsupported is flagged, not invented.
         <strong> Demo uses synthetic data only. Never paste real patient data.</strong>
       </p>
-      <p>UI under construction — being built as the Phase 1 learning exercise.</p>
+      <p>UI under construction — being built as the Phase 1 learning exercise today.</p>
     </main>
   );
 }
