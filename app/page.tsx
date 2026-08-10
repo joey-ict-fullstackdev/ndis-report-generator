@@ -17,7 +17,7 @@ export default function Home() {
   return (
     <main>
       <h1>NDIS Progress Report Generator</h1>
-      <p className="tagline">
+      <p className="text-muted-foreground mt-0">
         Drafts a progress report from session notes. Every claim is verified
         against its source note — anything unsupported is flagged, not invented.
         <strong> Demo uses synthetic data only. Never paste real patient data.</strong>
