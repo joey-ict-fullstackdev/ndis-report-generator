@@ -33,10 +33,10 @@ How each session works:
 I build the entire UI myself, component by component (`app/page.tsx` is a stub with the
 feature list; product spec in `PITCH.md`). Each step pairs a build task with a concept:
 
-- [ ] **Input form + what triggers a render**: build participant/goals/notes form as
+- [x] **Input form + what triggers a render**: build participant/goals/notes form as
       separate components; use React DevTools Profiler to explain what re-renders when
       I type in one input, and why
-- [ ] **Goals/claims editor + reconciliation & keys**: build the per-goal editor with
+- [x] **Goals/claims editor + reconciliation & keys**: build the per-goal editor with
       "delete goal" and "reorder goals"; get list keys wrong at least once on purpose,
       observe what breaks, fix it, and explain exactly what React's diffing did
 - [ ] **Render vs commit; memo/useMemo/useCallback**: measure my UI first, optimize only
