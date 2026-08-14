@@ -41,7 +41,7 @@ feature list; product spec in `PITCH.md`). Each step pairs a build task with a c
       observe what breaks, fix it, and explain exactly what React's diffing did
 - [x] **Render vs commit; memo/useMemo/useCallback**: measure my UI first, optimize only
       what's actually slow
-- [ ] **Generate flow + effects & race conditions**: wire up the /api/generate call;
+- [x] **Generate flow + effects & race conditions**: wire up the /api/generate call;
       demonstrate the stale-response race (click twice fast), fix with AbortController;
       explain event-handler fetch vs useEffect fetch
 - [ ] **Evidence trail + DOCX export**: render verified ✓ vs flagged ⚠ claims per goal;
