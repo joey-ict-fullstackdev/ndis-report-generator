@@ -17,9 +17,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useRef, useState } from "react";
+import { VerifiedClaim, VerifiedReport } from "@/lib/verify";
+import { exportDocx, toDraft } from "@/lib/docx";
 
 const practitionerOptions = [
   "Occupational Therapy",
@@ -557,6 +559,63 @@ function NotesForm({
   );
 }
 
+function ClaimRow({ claim }: { claim: VerifiedClaim }) {
+  return (
+    <div className="rounded-lg border border-border/70 bg-background p-3">
+      <p className="flex items-start gap-2 text-sm text-foreground">
+        <span aria-hidden>{claim.verified ? "✓" : "⚠"}</span>
+        <span>{claim.text}</span>
+      </p>
+      <ul className="mt-2 space-y-1 pl-6 text-xs text-muted-foreground">
+        {claim.evidence.map((e, i) => (
+          // index key is fine here: server-generated per fetch, never
+          // reordered/spliced client-side — unlike GoalRow's stable ids.
+          <li key={i}>
+            {e.verified ? "✓" : "⚠"} "{e.quote} - {e.note_id}"
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function GoalReportCard({ goal }: { goal: VerifiedReport["goals"][number] }) {
+  return (
+    <div className="rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-semibold text-foreground">
+          {goal.goal_text}
+        </h3>
+        <span className="rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-xs font-medium text-primary">
+          {goal.status}
+        </span>
+      </div>
+
+      {goal.insufficient_evidence && (
+        <p className="mt-2 text-sm text-amber-600">
+          Insufficient evidence for this goal
+        </p>
+      )}
+
+      <div className="mt-3 space-y-2">
+        {goal.claims.map((claim, i) => (
+          <ClaimRow key={i} claim={claim} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function VerifiedReportView({ report }: { report: VerifiedReport }) {
+  return (
+    <div className="space-y-4">
+      {report.goals.map((goal, i) => (
+        <GoalReportCard key={i} goal={goal} />
+      ))}
+    </div>
+  );
+}
+
 export default function Home() {
   const [participant, setParticipant] = useState<ParticipantFormState>({
     name: "",
@@ -650,6 +709,10 @@ export default function Home() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const [error, setError] = useState<string>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [verifiedReport, setVerifiedReport] = useState<VerifiedReport | null>(
+    null,
+  );
 
   const handleGenerateReport = async () => {
     if (abortControllerRef.current) {
@@ -659,9 +722,24 @@ export default function Home() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
+    setError(undefined);
+    setIsLoading(true);
+
     try {
       const goals = newGoals.map((goal) => goal.text);
-      const agrs = { participant, goals, notes };
+      const agrs = {
+        participant: {
+          ...participant,
+          plan_start: participant.plan_start
+            ? format(participant.plan_start, "yyyy-MM-dd")
+            : "",
+          plan_end: participant.plan_end
+            ? format(participant.plan_end, "yyyy-MM-dd")
+            : "",
+        },
+        goals,
+        notes,
+      };
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -674,7 +752,9 @@ export default function Home() {
       }
 
       const { report, usage } = await res.json();
-      console.log(report);
+
+      setVerifiedReport(report);
+      setIsLoading(false);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
         return;
@@ -682,7 +762,40 @@ export default function Home() {
       setError(
         err instanceof Error ? err.message : "An unexpected error occurred.",
       );
-      console.log(err);
+      setIsLoading(false);
+    }
+  };
+
+  const handleExportDocx = async () => {
+    if (!verifiedReport) {
+      return;
+    }
+
+    setError(undefined);
+
+    try {
+      const draft = toDraft(verifiedReport);
+      const blob = await exportDocx(
+        {
+          ...participant,
+          plan_start: participant.plan_start
+            ? format(participant.plan_start, "yyyy-MM-dd")
+            : "",
+          plan_end: participant.plan_end
+            ? format(participant.plan_end, "yyyy-MM-dd")
+            : "",
+        },
+        draft,
+      );
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${participant.name.toLowerCase().trim().replace(" ", "-") || "ndis-progress-report"}-${participant.ndis_number}.docx`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to export report.");
     }
   };
 
@@ -712,11 +825,42 @@ export default function Home() {
         <Button
           type="button"
           onClick={handleGenerateReport}
+          disabled={isLoading}
           className="h-11 min-w-[180px] rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20"
         >
-          Generate Report
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            "Generate Report"
+          )}
         </Button>
       </div>
+
+      {error && (
+        <div className="mx-auto mt-4 w-full max-w-5xl rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+
+      {verifiedReport && (
+        <div className="mx-auto mt-8 w-full max-w-5xl">
+          <VerifiedReportView report={verifiedReport} />
+
+          <div className="mt-6 flex justify-end">
+            <Button
+              type="button"
+              onClick={handleExportDocx}
+              variant="outline"
+              className="h-11 min-w-[180px] rounded-xl"
+            >
+              Export DOCX
+            </Button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

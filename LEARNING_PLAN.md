@@ -44,9 +44,9 @@ feature list; product spec in `PITCH.md`). Each step pairs a build task with a c
 - [x] **Generate flow + effects & race conditions**: wire up the /api/generate call;
       demonstrate the stale-response race (click twice fast), fix with AbortController;
       explain event-handler fetch vs useEffect fetch
-- [ ] **Evidence trail + DOCX export**: render verified ✓ vs flagged ⚠ claims per goal;
+- [x] **Evidence trail + DOCX export**: render verified ✓ vs flagged ⚠ claims per goal;
       wire `exportDocx`
-- [ ] ✅ Checkpoint: answer "walk me through setState → pixels on screen" unprompted,
+- [x] ✅ Checkpoint: answer "walk me through setState → pixels on screen" unprompted,
       using this app as the example
 
 ## Phase 2 — TypeScript depth
