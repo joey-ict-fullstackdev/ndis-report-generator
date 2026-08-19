@@ -21,6 +21,7 @@ import { CalendarIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useRef, useState } from "react";
 import { VerifiedClaim, VerifiedReport } from "@/lib/verify";
+import { EnrichedClaim, EnrichedReport } from "@/lib/verify-enrich";
 import { exportDocx, toDraft } from "@/lib/docx";
 
 const practitionerOptions = [
@@ -616,6 +617,84 @@ function VerifiedReportView({ report }: { report: VerifiedReport }) {
   );
 }
 
+// New, additive components for Step 1 (quote location tracking) of the
+// verify-enrich plan. ClaimRow/GoalReportCard/VerifiedReportView above are
+// left untouched; these render the same content plus a location hint.
+
+function EnrichedClaimRow({ claim }: { claim: EnrichedClaim }) {
+  return (
+    <div className="rounded-lg border border-border/70 bg-background p-3">
+      <p className="flex items-start gap-2 text-sm text-foreground">
+        <span aria-hidden>{claim.verified ? "✓" : "⚠"}</span>
+        <span>{claim.text}</span>
+      </p>
+      <ul className="mt-2 space-y-1 pl-6 text-xs text-muted-foreground">
+        {claim.evidence.map((e, i) => (
+          <li key={i}>
+            {e.verified ? "✓" : "⚠"} "{e.quote} - {e.note_id}"
+            {e.location && (
+              <span className="ml-1 text-muted-foreground/70">
+                (found at char {e.location.start})
+              </span>
+            )}
+            {e.duplicate && (
+              <span className="ml-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                duplicate citation
+              </span>
+            )}
+            {e.match_type === "paraphrased" && (
+              <span className="ml-1 rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-medium text-sky-700">
+                possible paraphrase
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function EnrichedGoalReportCard({
+  goal,
+}: {
+  goal: EnrichedReport["goals"][number];
+}) {
+  return (
+    <div className="rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-semibold text-foreground">
+          {goal.goal_text}
+        </h3>
+        <span className="rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-xs font-medium text-primary">
+          {goal.status}
+        </span>
+      </div>
+
+      {goal.insufficient_evidence && (
+        <p className="mt-2 text-sm text-amber-600">
+          Insufficient evidence for this goal
+        </p>
+      )}
+
+      <div className="mt-3 space-y-2">
+        {goal.claims.map((claim, i) => (
+          <EnrichedClaimRow key={i} claim={claim} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EnrichedReportView({ report }: { report: EnrichedReport }) {
+  return (
+    <div className="space-y-4">
+      {report.goals.map((goal, i) => (
+        <EnrichedGoalReportCard key={i} goal={goal} />
+      ))}
+    </div>
+  );
+}
+
 export default function Home() {
   const [participant, setParticipant] = useState<ParticipantFormState>({
     name: "",
@@ -708,11 +787,34 @@ export default function Home() {
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const [error, setError] = useState<string>();
-  const [isLoading, setIsLoading] = useState(false);
-  const [verifiedReport, setVerifiedReport] = useState<VerifiedReport | null>(
-    null,
-  );
+  // const [error, setError] = useState<string>();
+  // const [isLoading, setIsLoading] = useState(false);
+  // Widened from VerifiedReport to EnrichedReport: the API now returns the
+  // enriched shape end-to-end (see app/api/generate/route.ts). EnrichedReport
+  // is a strict superset, so this is the only type annotation that needs to
+  // change for the rest of the component to keep compiling.
+  // const [verifiedReport, setVerifiedReport] = useState<EnrichedReport | null>(
+  //   null,
+  // );
+
+  // Phase 2 exercise: collapse the three states above into one discriminated
+  // union so "loading and errored" etc. can't be represented at all, not just
+  // avoided by convention. See LEARNING_PLAN.md Phase 2, item 2.
+  type GenerationState =
+    | { status: "idle" }
+    | { status: "loading" }
+    | { status: "error"; message: string }
+    | { status: "success"; report: EnrichedReport };
+
+  const [generation, setGeneration] = useState<GenerationState>({
+    status: "idle",
+  });
+  // Export is a separate concern from generation (can only run once
+  // generation.status === "success", and a failed export shouldn't discard
+  // the already-generated report or force the UI into a generation-error
+  // state) — folding it into `generation` would just recreate the same
+  // "impossible states" problem one level up. Kept as its own small state.
+  const [exportError, setExportError] = useState<string>();
 
   const handleGenerateReport = async () => {
     if (abortControllerRef.current) {
@@ -722,11 +824,24 @@ export default function Home() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    setError(undefined);
-    setIsLoading(true);
+    // setError(undefined);
+    // setIsLoading(true);
+    setGeneration({ status: "loading" });
 
     try {
       const goals = newGoals.map((goal) => goal.text);
+      // Notes keep their crypto.randomUUID() id internally (stable React key
+      // across reordering/deletion), but the LLM is only ever shown short
+      // S1..Sn ids in generate.ts's worked examples — given a raw UUID
+      // instead, it doesn't reliably echo it back verbatim in evidence.note_id,
+      // which silently breaks verifyReport's exact note_id match for every
+      // claim. Re-index to S1..Sn only in the payload sent to the API, so the
+      // ids the model is prompted with are the same ids verifyReport checks
+      // against.
+      const notesForApi = notes.map((note, i) => ({
+        ...note,
+        id: `S${i + 1}`,
+      }));
       const agrs = {
         participant: {
           ...participant,
@@ -738,7 +853,7 @@ export default function Home() {
             : "",
         },
         goals,
-        notes,
+        notes: notesForApi,
       };
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -753,28 +868,43 @@ export default function Home() {
 
       const { report, usage } = await res.json();
 
-      setVerifiedReport(report);
-      setIsLoading(false);
+      // setVerifiedReport(report);
+      // setIsLoading(false);
+      setGeneration({ status: "success", report });
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
+        // No state update here on purpose, in either version: this is the
+        // stale-response race fix from Phase 1 — an aborted request's own
+        // catch must do nothing, because the *superseding* request already
+        // called setGeneration({status: "loading"}) for itself.
         return;
       }
-      setError(
-        err instanceof Error ? err.message : "An unexpected error occurred.",
-      );
-      setIsLoading(false);
+      // setError(
+      //   err instanceof Error ? err.message : "An unexpected error occurred.",
+      // );
+      // setIsLoading(false);
+      setGeneration({
+        status: "error",
+        message:
+          err instanceof Error ? err.message : "An unexpected error occurred.",
+      });
     }
   };
 
   const handleExportDocx = async () => {
-    if (!verifiedReport) {
+    // if (!verifiedReport) {
+    //   return;
+    // }
+    if (generation.status !== "success") {
       return;
     }
 
-    setError(undefined);
+    // setError(undefined);
+    setExportError(undefined);
 
     try {
-      const draft = toDraft(verifiedReport);
+      // const draft = toDraft(verifiedReport);
+      const draft = toDraft(generation.report);
       const blob = await exportDocx(
         {
           ...participant,
@@ -795,7 +925,10 @@ export default function Home() {
       link.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to export report.");
+      // setError(err instanceof Error ? err.message : "Failed to export report.");
+      setExportError(
+        err instanceof Error ? err.message : "Failed to export report.",
+      );
     }
   };
 
@@ -825,10 +958,19 @@ export default function Home() {
         <Button
           type="button"
           onClick={handleGenerateReport}
-          disabled={isLoading}
+          // disabled={isLoading}
+          disabled={generation.status === "loading"}
           className="h-11 min-w-[180px] rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20"
         >
-          {isLoading ? (
+          {/* {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            "Generate Report"
+          )} */}
+          {generation.status === "loading" ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Generating...
@@ -839,15 +981,45 @@ export default function Home() {
         </Button>
       </div>
 
-      {error && (
+      {/* {error && (
         <div className="mx-auto mt-4 w-full max-w-5xl rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
         </div>
+      )} */}
+      {generation.status === "error" && (
+        <div className="mx-auto mt-4 w-full max-w-5xl rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+          {generation.message}
+        </div>
       )}
 
+      {exportError && (
+        <div className="mx-auto mt-4 w-full max-w-5xl rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+          {exportError}
+        </div>
+      )}
+
+      {/*
       {verifiedReport && (
         <div className="mx-auto mt-8 w-full max-w-5xl">
           <VerifiedReportView report={verifiedReport} />
+          <EnrichedReportView report={verifiedReport} />
+
+          <div className="mt-6 flex justify-end">
+            <Button
+              type="button"
+              onClick={handleExportDocx}
+              variant="outline"
+              className="h-11 min-w-[180px] rounded-xl"
+            >
+              Export DOCX
+            </Button>
+          </div>
+        </div>
+      )}
+      */}
+      {generation.status === "success" && (
+        <div className="mx-auto mt-8 w-full max-w-5xl">
+          <EnrichedReportView report={generation.report} />
 
           <div className="mt-6 flex justify-end">
             <Button
