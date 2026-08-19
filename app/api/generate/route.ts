@@ -1,5 +1,6 @@
 import { generateReport } from "@/lib/generate";
 import { verifyReport } from "@/lib/verify";
+import { enrichReport } from "@/lib/verify-enrich";
 
 export const maxDuration = 300;
 
@@ -18,7 +19,10 @@ export async function POST(req: Request) {
       );
     }
     const { report, usage } = await generateReport(participant, goals, notes);
-    return Response.json({ report: verifyReport(report, notes), usage });
+    // return Response.json({ report: verifyReport(report, notes), usage });
+    const verified = verifyReport(report, notes);
+    const enriched = enrichReport(verified, notes);
+    return Response.json({ report: enriched, usage });
   } catch (err) {
     return Response.json(
       { error: err instanceof Error ? err.message : "Generation failed" },
