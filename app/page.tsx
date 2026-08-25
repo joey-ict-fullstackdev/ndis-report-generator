@@ -22,6 +22,7 @@ import { format } from "date-fns";
 import { useRef, useState } from "react";
 import { VerifiedClaim, VerifiedReport, EnrichedClaim, EnrichedReport } from "@/lib/verify";
 import { exportDocx, toDraft } from "@/lib/docx";
+import { trpc } from "@/lib/trpc";
 
 const practitionerOptions = [
   "Occupational Therapy",
@@ -784,7 +785,13 @@ export default function Home() {
     );
   };
 
-  const abortControllerRef = useRef<AbortController | null>(null);
+  // Superseded by generateMutation below (trpc.generate.useMutation()).
+  // This existed only to cancel a stale in-flight fetch when the user
+  // clicked "Generate" again before the first request resolved. Now the
+  // button's disabled={generateMutation.isPending} makes a second click
+  // impossible while one is in flight, so there's no stale response left to
+  // race against, and no controller to abort.
+  // const abortControllerRef = useRef<AbortController | null>(null);
 
   // const [error, setError] = useState<string>();
   // const [isLoading, setIsLoading] = useState(false);
@@ -805,9 +812,23 @@ export default function Home() {
     | { status: "error"; message: string }
     | { status: "success"; report: EnrichedReport };
 
-  const [generation, setGeneration] = useState<GenerationState>({
-    status: "idle",
-  });
+  // Superseded by generateMutation below. React Query's mutation object is
+  // already a discriminated union in substance (isIdle/isPending/isError/
+  // isSuccess, each with the fields that go with it) -- keeping a second,
+  // manually-synced useState here would just reopen the "impossible states"
+  // problem Phase 2 closed one level up. `generation` is now derived from
+  // the mutation every render, not stored.
+  // const [generation, setGeneration] = useState<GenerationState>({
+  //   status: "idle",
+  // });
+  const generateMutation = trpc.generate.useMutation();
+  const generation: GenerationState = generateMutation.isPending
+    ? { status: "loading" }
+    : generateMutation.isError
+      ? { status: "error", message: generateMutation.error.message }
+      : generateMutation.isSuccess
+        ? { status: "success", report: generateMutation.data.report }
+        : { status: "idle" };
   // Export is a separate concern from generation (can only run once
   // generation.status === "success", and a failed export shouldn't discard
   // the already-generated report or force the UI into a generation-error
@@ -815,79 +836,97 @@ export default function Home() {
   // "impossible states" problem one level up. Kept as its own small state.
   const [exportError, setExportError] = useState<string>();
 
-  const handleGenerateReport = async () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+  // Superseded by generateMutation.mutate() below. fetch, JSON.stringify,
+  // res.ok / res.json() error unwrapping, and the AbortController race guard
+  // are now handled by @trpc/react-query + React Query itself -- the
+  // request/response types come from the router (server/router.ts), not
+  // from a hand-written response shape.
+  // const handleGenerateReport = async () => {
+  //   if (abortControllerRef.current) {
+  //     abortControllerRef.current.abort();
+  //   }
+  //
+  //   const controller = new AbortController();
+  //   abortControllerRef.current = controller;
+  //
+  //   // setError(undefined);
+  //   // setIsLoading(true);
+  //   setGeneration({ status: "loading" });
+  //
+  //   try {
+  //     const goals = newGoals.map((goal) => goal.text);
+  //     const notesForApi = notes.map((note, i) => ({
+  //       ...note,
+  //       id: `S${i + 1}`,
+  //     }));
+  //     const agrs = {
+  //       participant: {
+  //         ...participant,
+  //         plan_start: participant.plan_start
+  //           ? format(participant.plan_start, "yyyy-MM-dd")
+  //           : "",
+  //         plan_end: participant.plan_end
+  //           ? format(participant.plan_end, "yyyy-MM-dd")
+  //           : "",
+  //       },
+  //       goals,
+  //       notes: notesForApi,
+  //     };
+  //     const res = await fetch("/api/generate", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(agrs),
+  //       signal: controller.signal,
+  //     });
+  //     if (!res.ok) {
+  //       const errorData = await res.json();
+  //       throw new Error(errorData.error || "An unexpected error occurred.");
+  //     }
+  //
+  //     const { report, usage } = await res.json();
+  //
+  //     // setVerifiedReport(report);
+  //     // setIsLoading(false);
+  //     setGeneration({ status: "success", report });
+  //   } catch (err) {
+  //     if (err instanceof DOMException && err.name === "AbortError") {
+  //       return;
+  //     }
+  //     setGeneration({
+  //       status: "error",
+  //       message:
+  //         err instanceof Error ? err.message : "An unexpected error occurred.",
+  //     });
+  //   }
+  // };
 
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    // setError(undefined);
-    // setIsLoading(true);
-    setGeneration({ status: "loading" });
-
-    try {
-      const goals = newGoals.map((goal) => goal.text);
-      // Notes keep their crypto.randomUUID() id internally (stable React key
-      // across reordering/deletion), but the LLM is only ever shown short
-      // S1..Sn ids in generate.ts's worked examples — given a raw UUID
-      // instead, it doesn't reliably echo it back verbatim in evidence.note_id,
-      // which silently breaks verifyReport's exact note_id match for every
-      // claim. Re-index to S1..Sn only in the payload sent to the API, so the
-      // ids the model is prompted with are the same ids verifyReport checks
-      // against.
-      const notesForApi = notes.map((note, i) => ({
-        ...note,
-        id: `S${i + 1}`,
-      }));
-      const agrs = {
-        participant: {
-          ...participant,
-          plan_start: participant.plan_start
-            ? format(participant.plan_start, "yyyy-MM-dd")
-            : "",
-          plan_end: participant.plan_end
-            ? format(participant.plan_end, "yyyy-MM-dd")
-            : "",
-        },
-        goals,
-        notes: notesForApi,
-      };
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(agrs),
-        signal: controller.signal,
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "An unexpected error occurred.");
-      }
-
-      const { report, usage } = await res.json();
-
-      // setVerifiedReport(report);
-      // setIsLoading(false);
-      setGeneration({ status: "success", report });
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") {
-        // No state update here on purpose, in either version: this is the
-        // stale-response race fix from Phase 1 — an aborted request's own
-        // catch must do nothing, because the *superseding* request already
-        // called setGeneration({status: "loading"}) for itself.
-        return;
-      }
-      // setError(
-      //   err instanceof Error ? err.message : "An unexpected error occurred.",
-      // );
-      // setIsLoading(false);
-      setGeneration({
-        status: "error",
-        message:
-          err instanceof Error ? err.message : "An unexpected error occurred.",
-      });
-    }
+  const handleGenerateReport = () => {
+    const goals = newGoals.map((goal) => goal.text);
+    // Notes keep their crypto.randomUUID() id internally (stable React key
+    // across reordering/deletion), but the LLM is only ever shown short
+    // S1..Sn ids in generate.ts's worked examples — given a raw UUID
+    // instead, it doesn't reliably echo it back verbatim in evidence.note_id,
+    // which silently breaks verifyReport's exact note_id match for every
+    // claim. Re-index to S1..Sn only in the payload sent to the API, so the
+    // ids the model is prompted with are the same ids verifyReport checks
+    // against.
+    const notesForApi = notes.map((note, i) => ({
+      ...note,
+      id: `S${i + 1}`,
+    }));
+    generateMutation.mutate({
+      participant: {
+        ...participant,
+        plan_start: participant.plan_start
+          ? format(participant.plan_start, "yyyy-MM-dd")
+          : "",
+        plan_end: participant.plan_end
+          ? format(participant.plan_end, "yyyy-MM-dd")
+          : "",
+      },
+      goals,
+      notes: notesForApi,
+    });
   };
 
   const handleExportDocx = async () => {
@@ -958,7 +997,8 @@ export default function Home() {
           type="button"
           onClick={handleGenerateReport}
           // disabled={isLoading}
-          disabled={generation.status === "loading"}
+          // disabled={generation.status === "loading"}
+          disabled={generateMutation.isPending}
           className="h-11 min-w-[180px] rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20"
         >
           {/* {isLoading ? (
