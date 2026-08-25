@@ -51,10 +51,10 @@ feature list; product spec in `PITCH.md`). Each step pairs a build task with a c
 
 ## Phase 2 — TypeScript depth
 
-- [ ] Dissect `lib/verify.ts`: `Omit`, inferred return types, `z.infer`; extend without `any`
-- [ ] Replace loading/error/data useStates in the page with ONE discriminated union
+- [x] Dissect `lib/verify.ts`: `Omit`, inferred return types, `z.infer`; extend without `any`
+- [x] Replace loading/error/data useStates in the page with ONE discriminated union
       ("make impossible states unrepresentable")
-- [ ] ✅ Checkpoint: trace one type from Zod schema → API boundary → UI prop, out loud
+- [x] ✅ Checkpoint: trace one type from Zod schema → API boundary → UI prop, out loud
 
 ## Phase 3 — End-to-end type safety (tRPC)  ← the interview gap
 
