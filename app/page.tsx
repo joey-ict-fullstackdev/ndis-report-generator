@@ -20,8 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useRef, useState } from "react";
-import { VerifiedClaim, VerifiedReport } from "@/lib/verify";
-import { EnrichedClaim, EnrichedReport } from "@/lib/verify-enrich";
+import { VerifiedClaim, VerifiedReport, EnrichedClaim, EnrichedReport } from "@/lib/verify";
 import { exportDocx, toDraft } from "@/lib/docx";
 
 const practitionerOptions = [

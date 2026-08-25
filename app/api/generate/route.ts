@@ -1,6 +1,5 @@
 import { generateReport } from "@/lib/generate";
-import { verifyReport } from "@/lib/verify";
-import { enrichReport } from "@/lib/verify-enrich";
+import { verifyReport, enrichReport } from "@/lib/verify";
 
 export const maxDuration = 300;
 
