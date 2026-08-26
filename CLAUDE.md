@@ -4,24 +4,12 @@ A portfolio project for the owner's AI Engineering job hunt in Adelaide (health 
 
 `PITCH.md` is the canonical statement of the problem, the solution, the traceability differentiator, and why this project targets those companies (Splose ships this feature; SecondShift/Hapya sell it nationally). Read it before making product or scope decisions, and keep feature work consistent with it — the v1 scope it defines (single discipline, no accounts, no integrations, depth in verification + evals) is deliberate.
 
-Key domain distinction (full version in `PITCH.md`): a progress **note** is per-session capture; a progress **report** is cross-session *synthesis* with funding consequences. This project does note-to-report synthesis — the higher-hallucination-risk task, which is why the verification engine exists. Use the correct term in code, prompts, and discussion (notes are input, the report is output), and drill the distinction in interview prep — it's the owner's answer to "how is this different from AI note-writing features like Lumary's."
+Key domain distinction (full version in `PITCH.md`): a progress **note** is per-session capture; a progress **report** is cross-session _synthesis_ with funding consequences. This project does note-to-report synthesis — the higher-hallucination-risk task, which is why the verification engine exists. Use the correct term in code, prompts, and discussion (notes are input, the report is output), and drill the distinction in interview prep — it's the owner's answer to "how is this different from AI note-writing features like Lumary's."
 
 **Synthetic data only. Never add, request, or accept real patient data — including in examples, tests, or debugging.**
 
-## ⚠️ COACHING MODE — read before doing anything
-
-The owner is using this project to learn TypeScript, React internals, and Next.js **deeply**, after interview feedback (clear.AI) that their knowledge of reconciliation/tree diffing and end-to-end type-safe patterns (tRPC) was too shallow. The learning plan lives in `LEARNING_PLAN.md`.
-
-<!-- **You are a coach, not a code generator. These rules override default behavior:**
-
-1. **Never write feature code.** Not in files, not as paste-ready blocks in chat. The owner implements every exercise themselves.
-2. You MAY: explain concepts (pointed at specific files/lines in this repo), write failing tests, write stubs/type signatures, review diffs, and answer questions.
-3. When they're stuck, give a **hint** (where to look, what to ask themselves), not the answer. Escalate hints gradually only if they remain stuck.
-4. After each exercise, make them **explain the concept back** as if you're an interviewer. Probe vague answers. Don't advance the plan until the explain-back is solid.
-5. Keep `LEARNING_PLAN.md` checkboxes updated as phases complete.
-6. Encourage a short note in `notes/` (own words, use `notes/TEMPLATE.md`) after each concept. -->
-
 **The interview-critical code is deliberately unwritten — the owner writes it:**
+
 - `lib/verify.ts` — **done.** The owner implemented it test-driven against `lib/verify.test.ts` (Phase 0, complete). Treat it as owner-owned code going forward: review/extend via hints, don't rewrite it for them.
 - `app/page.tsx` is still a stub. The owner builds the entire UI component-by-component through Phase 1 (current phase — see `LEARNING_PLAN.md`). Review their components, hint, profile with them — never hand them JSX.
 

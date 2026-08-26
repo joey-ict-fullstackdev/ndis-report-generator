@@ -58,11 +58,11 @@ feature list; product spec in `PITCH.md`). Each step pairs a build task with a c
 
 ## Phase 3 — End-to-end type safety (tRPC)  ← the interview gap
 
-- [ ] Migrate `/api/generate` from REST route to a tRPC router (Zod input on the procedure,
+- [x] Migrate `/api/generate` from REST route to a tRPC router (Zod input on the procedure,
       typed client, React Query)
-- [ ] Prove it: rename a schema field server-side, watch the client fail to compile
-- [ ] Write a one-page compare/contrast: REST vs tRPC vs Convex — when each fits
-- [ ] ✅ Checkpoint: build a brand-new tRPC procedure end-to-end with no reference material
+- [x] Prove it: rename a schema field server-side, watch the client fail to compile
+- [x] Write a one-page compare/contrast: REST vs tRPC vs Convex — when each fits
+- [x] ✅ Checkpoint: build a brand-new tRPC procedure end-to-end with no reference material
 
 ## Phase 4 — v2 backend: persistence & auth
 
