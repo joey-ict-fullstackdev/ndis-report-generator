@@ -43,3 +43,28 @@ All examples, tests, and eval cases use synthetic data only; no real patient inf
 ## Architecture
 
 The broader architecture and project conventions are described in CLAUDE.md. In short, lib/schema.ts defines the report structure, lib/generate.ts handles generation, lib/verify.ts performs evidence validation, and app/api/generate/route.ts wires the flow together for the app.
+
+## Development Tooling: Lavish Editor Skill
+
+This repo uses the Claude Code `lavish` skill (see `.claude/skills/lavish/SKILL.md`) to render rich HTML review artifacts - plans, comparisons, diagrams - during development. That skill works by shelling out to the `lavish-axi` CLI via `npx -y lavish-axi`, which by default pulls the latest published package from npm and runs a small local review server.
+
+This project points at a security-hardened fork instead: https://github.com/joey-ict-fullstackdev/lavish-axi. The fork changes three defaults in the upstream tool that otherwise widen its exposure beyond "runs on localhost for one person": Tailscale network auto-exposure and telemetry are now opt-in rather than opt-out, and the local review server refuses to open anything but an `.html`/`.htm` file (upstream accepted any path). `skills-lock.json` records this fork as the skill's source.
+
+To install the fork so `npx -y lavish-axi` resolves to it instead of the public package:
+
+1. Clone the fork somewhere outside this repo (use a native filesystem path - on WSL, a Windows drive under `/mnt/c` or `/mnt/d`, not a path under `/tmp`, since npm's install scripts don't handle WSL's UNC paths):
+   ```
+   git clone https://github.com/joey-ict-fullstackdev/lavish-axi.git
+   ```
+2. Build it and link it globally:
+   ```
+   cd lavish-axi
+   npm install
+   npm link
+   ```
+3. Verify it resolved to the fork instead of the registry:
+   ```
+   npx -y lavish-axi --version
+   ```
+
+This is a machine-wide `npm link`, not a project dependency - it affects every project on the machine that invokes `lavish-axi`, and only needs to be done once per machine. It has no effect on the app itself; it is purely a development-time tool for the AI-assisted workflow described in CLAUDE.md.
