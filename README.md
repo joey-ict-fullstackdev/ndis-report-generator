@@ -2,7 +2,7 @@
 
 This project is a web app for turning allied health session notes into structured NDIS progress report drafts with evidence-backed claims. It is designed for clinicians and portfolio reviewers who want a faster drafting workflow without sacrificing traceability.
 
-Demo link: https://youtu.be/jAyh43UE53c
+Demo link: https://youtu.be/EF_Z82xH-WE
 
 ## The Traceability Problem
 
