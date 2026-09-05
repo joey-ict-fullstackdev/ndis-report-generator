@@ -2,6 +2,8 @@
 
 This project is a web app for turning allied health session notes into structured NDIS progress report drafts with evidence-backed claims. It is designed for clinicians and portfolio reviewers who want a faster drafting workflow without sacrificing traceability.
 
+Demo link: https://youtu.be/jAyh43UE53c
+
 ## The Traceability Problem
 
 A progress note is a per-session record of what happened in one appointment. A progress report is a cross-session synthesis used for plan reviews and funding decisions. That synthesis step is where hallucination risk is highest, because the model must combine many notes into a single narrative and decide what counts as progress.
